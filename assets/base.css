@@ -3811,7 +3811,7 @@ h1:not([data-text]) {
 }
 
 /* Buttons */
-button {
+.btn-theme {
   position: relative;
   background-color: transparent;
   border: none;
@@ -3820,7 +3820,7 @@ button {
   color: white !important;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+  transition: 3s;
   box-shadow: 0 0 20px var(--theme-color, #3b82f6);
   font-size: 1rem;
   display: inline-flex;
@@ -3833,11 +3833,10 @@ button {
   z-index: 1;
   border: 1px solid rgba(255, 255, 255, 0.15);
   text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-  transition: 3s;
 }
 
 /* Background gradient - Bottom to top */
-button::before {
+.btn-theme::before {
   content: "";
   position: absolute;
   top: 0;
@@ -3855,7 +3854,7 @@ button::before {
 }
 
 /* Background gradient - Top to bottom */
-button::after {
+.btn-theme::after {
   content: "";
   position: absolute;
   top: 0;
@@ -3873,32 +3872,32 @@ button::after {
 }
 
 /* Hover state */
-button:hover {
+.btn-theme:hover {
   background-color: rgba(0, 0, 0, 0.8);
   color: white !important;
   box-shadow: 0 0 30px var(--theme-color, #3b82f6);
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-button:hover::before,
-button:hover::after {
+.btn-theme:hover::before,
+.btn-theme:hover::after {
   opacity: 0.9;
 }
 
 /* Primary button variant */
-button.btn-primary {
+.btn-primary {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Outline button variant */
-button.btn-outline {
+.btn-outline {
   background: transparent;
   border: 1px solid var(--theme-color-1, var(--theme-color, #3b82f6));
   box-shadow: none;
 }
 
-button.btn-outline:hover {
+.btn-outline:hover {
   background: rgba(0, 0, 0, 0.5);
   border-color: var(--theme-color-2, var(--theme-color, #22c55e));
 }
@@ -3938,7 +3937,7 @@ Nav bar */
 .disclosure__button.localization-form__select[aria-controls="HeaderCountryMobile-country-results"] {
   display: none;
 }
-//Country Currency Selector End
+/* Country Currency Selector End */
 
 
 .bit-particle {
@@ -3962,7 +3961,7 @@ Nav bar */
 }
 
 
-/* //.quantity */
+/* quantity */
 
 .quantity__button[name="minus"] {
   border-radius: 4rem 0 0 4rem !important;
@@ -3970,7 +3969,8 @@ Nav bar */
 
 .quantity__button[name="plus"] {
   border-radius: 0rem 4rem 4rem 0rem !important;
-}`
+}
+
 .title inline-richtext h1{
   color:red !important
 }
