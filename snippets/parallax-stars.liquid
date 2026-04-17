@@ -1,0 +1,122 @@
+<canvas id="parallax-stars-bg"></canvas>
+
+<script>
+(function () {
+  function initCanvas() {
+    const canvas = document.getElementById("parallax-stars-bg");
+    if (!canvas) {
+      setTimeout(initCanvas, 100);
+      return;
+    }
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.left = "0";
+    canvas.style.width = "100%";
+    canvas.style.height = "100%";
+    canvas.style.pointerEvents = "none";
+    canvas.style.zIndex = "-1";
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const DEFAULT_COLOR = "hsl(220, 100%, 50%)";
+
+    const getThemeColor = () => {
+      try {
+        const inline = document.documentElement.style
+          .getPropertyValue("--theme-color")
+          .trim();
+
+        if (inline) return inline;
+
+        const computed = getComputedStyle(document.documentElement)
+          .getPropertyValue("--theme-color")
+          .trim();
+
+        return computed || DEFAULT_COLOR;
+      } catch (e) {
+        return DEFAULT_COLOR;
+      }
+    };
+
+    let shootingColor = DEFAULT_COLOR;
+
+    setInterval(() => {
+      shootingColor = getThemeColor();
+    }, 300);
+
+    const width = () => canvas.width;
+    const height = () => canvas.height;
+
+    class Star {
+      constructor() {
+        this.reset();
+        this.x = Math.random() * width();
+        this.y = Math.random() * height();
+      }
+
+      reset() {
+        this.size = Math.random() * 2;
+        this.speed = Math.random() * 0.1;
+        this.x = width();
+        this.y = Math.random() * height();
+      }
+
+      update() {
+        this.x -= this.speed;
+        if (this.x < 0) this.reset();
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+
+    class ShootingStar {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width();
+        this.y = 0;
+        this.len = Math.random() * 80 + 10;
+        this.speed = Math.random() * 10 + 6;
+        this.size = Math.random() * 1 + 0.1;
+        this.waitTime = Date.now() + Math.random() * 3000 + 500;
+        this.active = false;
+      }
+
+      update() {
+        if (this.active) {
+          this.x -= this.speed;
+          this.y += this.speed;
+
+          if (this.x < 0 || this.y > height()) {
+            this.reset();
+          } else {
+            ctx.lineWidth = this.size;
+            ctx.strokeStyle = shootingColor;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.len, this.y - this.len);
+            ctx.stroke();
+          }
+        } else if (this.waitTime < Date.now()) {
+          this.active = true;
+        }
+      }
+    }
+
+    const entities = [];
+  }
+
+  initCanvas();
+})();
+</script>>

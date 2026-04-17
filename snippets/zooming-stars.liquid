@@ -1,0 +1,273 @@
+{% comment %}
+  Shopify snippet: unified-stars-effect.liquid
+  Combines canvas starfield (parallax + shooting stars) with persistent zooming stars.
+  Place this file in snippets/ and include it in theme.liquid before </body>:
+  {% render 'unified-stars-effect' %}
+{% endcomment %}
+
+<style>
+  /* ---- HARD LAYER (only zooming stars, no red dots) ---- */
+  #hard-effects-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 2147483647;   /* topmost, but pointer-events: none */
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* zooming stars base style */
+  .zooming-star {
+    position: absolute;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    width: 30px;  /* will be overridden by inline style */
+    height: 30px;
+    will-change: transform, opacity;
+  }
+
+  @keyframes starLifecycle {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
+  }
+
+  /* canvas positioned behind everything */
+  #parallax-stars-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+
+<!-- canvas for starfield + shooting stars -->
+<canvas id="parallax-stars-bg"></canvas>
+
+<!-- div for zooming stars (foreground) -->
+<div id="hard-effects-layer"></div>
+
+<script>
+(function() {
+  // --------------------------------------------------------------
+  // CANVAS STARS (background + shooting stars)
+  // + dynamic resize: stars reposition relative to new dimensions
+  // --------------------------------------------------------------
+  function initCanvasAndLayer() {
+    const canvas = document.getElementById('parallax-stars-bg');
+    const hardLayer = document.getElementById('hard-effects-layer');
+
+    if (!canvas || !hardLayer) {
+      // retry until DOM ready
+      setTimeout(initCanvasAndLayer, 50);
+      return;
+    }
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    // ---------- canvas dimensions ----------
+    let width, height;
+    const updateDimensions = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width;
+      canvas.height = height;
+    };
+    updateDimensions();
+    window.addEventListener('resize', () => {
+      updateDimensions();
+      // when canvas resizes, recreate stars to fill new area
+      initStarsAndShooters();
+    });
+
+    // ---------- theme color handling (Shopify compatible) ----------
+    const DEFAULT_COLOR = 'hsl(220, 100%, 50%)'; // blue fallback
+    let shootingColor = DEFAULT_COLOR;
+    const getThemeColor = () => {
+      try {
+        // check for inline style first
+        const inline = document.documentElement.style.getPropertyValue('--theme-color')?.trim();
+        if (inline) return inline;
+        // then computed style
+        const computed = getComputedStyle(document.documentElement).getPropertyValue('--theme-color')?.trim();
+        return computed || DEFAULT_COLOR;
+      } catch (e) {
+        return DEFAULT_COLOR;
+      }
+    };
+    // update color periodically (in case theme changes dynamically)
+    setInterval(() => {
+      shootingColor = getThemeColor();
+    }, 300);
+
+    // ---------- canvas star classes ----------
+    class Star {
+      constructor() {
+        this.reset();
+        // initial position within current canvas
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+      }
+
+      reset() {
+        this.size = Math.random() * 2;
+        this.speed = Math.random() * 0.1;
+        this.x = width;               // start from right edge
+        this.y = Math.random() * height;
+      }
+
+      update() {
+        this.x -= this.speed;
+        if (this.x < 0) this.reset();
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+      }
+    }
+
+    class ShootingStar {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = 0;
+        this.len = Math.random() * 80 + 10;
+        this.speed = Math.random() * 10 + 6;
+        this.size = Math.random() * 1 + 0.1;
+        this.waitTime = Date.now() + Math.random() * 3000 + 500;
+        this.active = false;
+      }
+
+      update() {
+        if (this.active) {
+          this.x -= this.speed;
+          this.y += this.speed;
+
+          if (this.x < 0 || this.y > height) {
+            this.reset();
+          } else {
+            ctx.lineWidth = this.size;
+            ctx.strokeStyle = shootingColor;
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.len, this.y - this.len);
+            ctx.stroke();
+          }
+        } else if (this.waitTime < Date.now()) {
+          this.active = true;
+        }
+      }
+    }
+
+    // global canvas entities array
+    let entities = [];
+
+    function initStarsAndShooters() {
+      const starCount = Math.min(Math.floor(height * 0.5), 500);
+      const newEntities = [];
+
+      for (let i = 0; i < starCount; i++) {
+        newEntities.push(new Star());
+      }
+      for (let i = 0; i < 8; i++) {
+        newEntities.push(new ShootingStar());
+      }
+
+      entities = newEntities;
+    }
+
+    // first population
+    initStarsAndShooters();
+
+    // ---------- canvas animation ----------
+    const startTime = Date.now();
+    const FADE_DURATION = 3000;
+    const MAX_STAR_OPACITY = 0.8;
+
+    function animate() {
+      try {
+        const elapsed = Date.now() - startTime;
+        const opacity = Math.min(elapsed / FADE_DURATION, 1) * MAX_STAR_OPACITY;
+
+        // clear canvas with black
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, width, height);
+
+        // draw stars with fade-in opacity
+        ctx.globalAlpha = opacity;
+        ctx.fillStyle = '#fff';
+
+        entities.forEach(e => {
+          if (e && typeof e.update === 'function') {
+            e.update();
+          }
+        });
+
+        ctx.globalAlpha = 1;
+      } catch (e) {
+        // silent fail – never break Shopify storefront
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // --------------------------------------------------------------
+    // ZOOMING STARS (hard layer, infinite, responsive)
+    // --------------------------------------------------------------
+    const ZOOMING_STAR_COUNT = 12;
+
+    function createZoomingStar() {
+      const star = document.createElement('div');
+      star.className = 'zooming-star';
+
+      // random relative position (% of viewport) → scales with window
+      const x = Math.random() * 100;
+      const y = Math.random() * 100;
+      const size = 15 + Math.random() * 30;   // 15–45px
+      const duration = 4000 + Math.random() * 4000;  // 4–8 sec
+      const delay = Math.random() * 4000;
+
+      star.style.left = x + '%';
+      star.style.top = y + '%';
+      star.style.width = size + 'px';
+      star.style.height = size + 'px';
+      star.style.animation = `starLifecycle ${duration}ms ease-in-out ${delay}ms 1 forwards`;
+
+      star.innerHTML = `
+        <svg viewBox="0 0 52 52" width="100%" height="100%" style="display:block;">
+          <path d="M52,26c-23.9,1.2-24.8,2.1-26,26c-1.2-23.9-2.1-24.8-26-26c23.9-1.2,24.8-2.1,26-26C27.2,23.9,28.1,24.8,52,26z" fill="white"/>
+        </svg>
+      `;
+
+      // when animation ends, remove and create a new one (endless)
+      star.addEventListener('animationend', function onEnd() {
+        star.remove();
+        createZoomingStar();
+      });
+
+      hardLayer.appendChild(star);
+    }
+
+    // initial batch of zooming stars
+    for (let i = 0; i < ZOOMING_STAR_COUNT; i++) {
+      createZoomingStar();
+    }
+  }
+
+  // start everything after DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCanvasAndLayer);
+  } else {
+    initCanvasAndLayer();
+  }
+})();
+</script>

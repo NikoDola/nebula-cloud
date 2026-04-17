@@ -1,0 +1,13 @@
+@font-face {
+  font-family: "LemonMilk";
+  src: url("//nebulacloudco.com/cdn/shop/t/1/assets/LEMONMILK-Bold.woff2?v=19770414212266042111770079596") format("woff2");
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "LemonMilk";
+  src: url("//nebulacloudco.com/cdn/shop/t/1/assets/LEMONMILK-Medium.woff2?v=91432925331576752001770079596") format("woff2");
+  font-style: normal;
+  font-display: swap;
+}
