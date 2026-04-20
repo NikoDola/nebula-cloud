@@ -14,17 +14,17 @@
     "announcement-bar": {
       "type": "announcement-bar",
       "blocks": {
-        "announcement_pRhUtQ": {
-          "type": "announcement",
-          "settings": {
-            "text": "DREAM BIG",
-            "link": ""
-          }
-        },
         "announcement_mmNbtQ": {
           "type": "announcement",
           "settings": {
             "text": "Welcome to our store",
+            "link": ""
+          }
+        },
+        "announcement_pRhUtQ": {
+          "type": "announcement",
+          "settings": {
+            "text": "DREAM BIG",
             "link": ""
           }
         },
@@ -37,8 +37,8 @@
         }
       },
       "block_order": [
-        "announcement_pRhUtQ",
         "announcement_mmNbtQ",
+        "announcement_pRhUtQ",
         "announcement_KU66py"
       ],
       "settings": {
