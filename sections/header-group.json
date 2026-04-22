@@ -58,7 +58,7 @@
         "logo_position": "middle-center",
         "mobile_logo_position": "center",
         "menu": "men",
-        "menu_type_desktop": "mega",
+        "menu_type_desktop": "dropdown",
         "sticky_header_type": "reduce-logo-size",
         "show_line_separator": true,
         "color_scheme": "scheme-3e20a7fb-920a-42c4-9680-86db2028eeba",
